@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:websocket="http://www.springframework.org/schema/websocket"
+    xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+    
+    <websocket:handlers>
+        <websocket:mapping handler="webalarm" path="/ws/myHandler" />
+        <websocket:handshake-interceptors>
+            <beans:bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor"/>
+        </websocket:handshake-interceptors>
+    </websocket:handlers>
+ 
+    <beans:bean id="webalarm" class="it.net.sky.util.websocket.AlarmWebSocketHandler"/>
+     <websocket:handlers>
+        <websocket:mapping path="/ws/echo/alarm" handler="webalarm"/>
+        <websocket:handshake-handler ref="handshakeHandler"/>
+    </websocket:handlers>
+ 
+    <beans:bean id="handshakeHandler" class="org.springframework.web.socket.server.support.DefaultHandshakeHandler">
+        <beans:constructor-arg ref="upgradeStrategy"/>
+    </beans:bean>
+ 
+    <beans:bean id="upgradeStrategy" class="org.springframework.web.socket.server.standard.TomcatRequestUpgradeStrategy" /> 
+ <!--
+ 단위  밀리초 ms : 60000(1분) ,3600000(1시간) ,7200000(2시간) ,21600000(6시간)
+ 단위변경 참고사이트 : http://www.convertworld.com/ko/time/%EB%B0%80%EB%A6%AC%EC%84%B8%EC%BB%A8%EB%93%9C(%EB%B0%80%EB%A6%AC%EC%B4%88).html
+  -->
+  <beans:bean class="org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean"
+  p:maxSessionIdleTimeout="7200000"
+  p:maxTextMessageBufferSize="1048576"
+  />
+<!--         <property name="maxTextMessageBufferSize" value="8192"/> -->
+<!--         <property name="maxBinaryMessageBufferSize" value="8192"/> -->
+<!--     </beans:bean> -->
+<!--     <beans:bean id="serverFactory" class="org.eclipse.jetty.websocket.server.WebSocketServerFactory"> -->
+<!--         <beans:constructor-arg> -->
+<!--             <beans:bean class="org.eclipse.jetty.websocket.api.WebSocketPolicy"> -->
+<!--                 <beans:constructor-arg value="SERVER"/> -->
+<!--                 <beans:property name="inputBufferSize" value="8092"/> -->
+<!--                 <beans:property name="idleTimeout" value="600000"/> -->
+<!--             </beans:bean> -->
+<!--         </beans:constructor-arg> -->
+<!--     </beans:bean> -->
+        
+</beans:beans>

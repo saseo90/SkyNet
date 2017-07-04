@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="custommain">
+
+<select id="getList" resultType="it.net.sky.custommenu.vo.CustomMainVo" parameterType="it.net.sky.custommenu.vo.CustomMainVo">
+select reg_Id,CUSTOMID,CUSTOMLOC,CUSTOMRANK from CUSTOMMAINSAVE 
+	where CUSTOMLOC=#{customLoc,jdbcType=VARCHAR} 
+	and REG_ID=#{reg_Id,jdbcType=VARCHAR} 
+	and CUSTOMID != '1'
+	order by CUSTOMRANK
+</select>
+<select id="getfirst" resultType="it.net.sky.custommenu.vo.CustomMainVo" parameterType="String">
+	select reg_Id,CUSTOMID,CUSTOMLOC,CUSTOMRANK from CUSTOMMAINSAVE 
+		where CUSTOMLOC=#{loc,jdbcType=VARCHAR} and reg_id='admin'
+		and CUSTOMID != 1
+</select>
+<update id="updateList" parameterType="it.net.sky.custommenu.vo.CustomMainVo">
+	update CUSTOMMAINSAVE 
+		set CUSTOMLOC=#{customLoc,jdbcType=VARCHAR}, CUSTOMRANK=#{customRank,jdbcType=VARCHAR}
+	 	where reg_Id=#{reg_Id,jdbcType=VARCHAR} 
+	 	and customId=#{customId,jdbcType=VARCHAR}
+</update>
+<insert id="insrtList" parameterType="java.util.Map">
+	 INSERT ALL
+	 <foreach collection="list" item="item">
+	 INTO CUSTOMMAINSAVE(REG_ID,CUSTOMID,CUSTOMLOC,CUSTOMRANK) 
+	 	VALUES(#{item.reg_Id},#{item.customId,jdbcType=VARCHAR},#{item.customLoc,jdbcType=VARCHAR},#{item.customRank,jdbcType=VARCHAR})
+	 </foreach>
+	 select '1' from dual
+</insert>
+<delete id="deleteList" parameterType="String">
+	DELETE FROM CUSTOMMAINSAVE 
+		WHERE REG_ID=#{id,jdbcType=VARCHAR}
+</delete>
+
+<select id="getlistCount" resultType="int" parameterType="java.util.Map">
+	select  count(*) from CUSTOMMAINSAVE where reg_id=#{id}
+</select>
+<select id="getHTMLCODE" parameterType="it.net.sky.custommenu.vo.CustomMainVo" resultType="it.net.sky.custommenu.vo.CustomMainHTMLVo">
+	select CUSTOMMAINLIST.CUSTOMNAME,CUSTOMMAINLIST.CUSTOMCODE,CUSTOMMAINLIST.CUSTOMID 
+		from CUSTOMMAINLIST ,CUSTOMMAINSAVE 
+		WHERE CUSTOMMAINLIST.CUSTOMID=CUSTOMMAINSAVE.CUSTOMID
+		and CUSTOMMAINSAVE.REG_ID =#{reg_Id}
+		and CUSTOMMAINSAVE.CUSTOMLOC=#{customLoc}
+		order by CUSTOMMAINSAVE.CUSTOMRANK
+</select>
+
+</mapper>

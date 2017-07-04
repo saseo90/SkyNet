@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="inout">
+	
+	
+	<!-- 전체 메뉴 리스트 뽑기 -->
+<!-- 	<select id="menuList" resultType="it.net.sky.custommenu.vo.CustommenuVo"> -->
+<!-- 		select * from MENU -->
+<!-- 	</select> -->
+	
+	<insert id="insertIntime" parameterType="it.net.sky.inout.vo.InoutVo">
+		insert into INOUT 
+		values (
+			 SEQ_INOUTSEQ_num.nextval
+			,sysdate
+			,#{inout_member}
+			,sysdate
+			,sysdate
+			,0
+			,0
+		)
+	</insert>
+	
+	<update id="insertOuttime" parameterType="it.net.sky.inout.vo.InoutVo">
+		update inout
+		set inout_outtime = sysdate
+		where inout_member = #{inout_member}
+		  and substr(inout_date,1,8) = substr(sysdate,1,8)
+	</update>
+	
+<!-- 	사원번호에 따른 전체 내역조회  -->
+	<select id="listMember" resultType="it.net.sky.inout.vo.InoutVo"> 
+		select inout_seq
+			  ,to_char(inout_date, 'yyyy-mm-dd [dy]') as inout_date
+			  ,inout_member
+			  ,to_char(inout_intime, 'HH24:mi:ss') as inout_intime
+			  ,to_char(inout_outtime, 'HH24:mi:ss') as inout_outtime
+			  ,inout_state
+			  ,inout_overtime
+		from inout 
+		where inout_member = #{inout_member}
+		order by inout_date desc
+	</select>
+	
+	<select id="listOverTime" resultType="int" parameterType="int">
+		select sum(inout_overtime) from inout where inout_member = #{inout_member};
+	</select>
+	
+<!-- 	오늘 상태 -->
+	<select id="searchToday" parameterType="Map" resultType="it.net.sky.inout.vo.InoutVo">
+		 select  inout_seq
+			  ,to_char(inout_date, 'yyyy-mm-dd [dy]') as inout_date
+			  ,inout_member
+			  ,to_char(inout_intime, 'HH24:mi:ss') as inout_intime
+			  ,to_char(inout_outtime, 'HH24:mi:ss') as inout_outtime
+			  ,inout_state
+			  ,inout_overtime
+		 from inout
+     	 where to_char( inout_date, 'yyyymmdd' ) = to_char( sysdate, 'yyyymmdd')
+     	 and inout_member = #{inout_member}
+	</select>
+	
+<!-- 	지각수정 -->
+	<update id="updateState" parameterType="it.net.sky.inout.vo.InoutVo">
+      update inout 
+      set inout_state = '1'
+      where to_char(inout_intime,'hh24') > 8
+      and inout_member = #{inout_member}
+	</update>
+	
+<!-- 조퇴확인 -->	
+	<update id="updateEarly" parameterType="it.net.sky.inout.vo.InoutVo">
+		update inout
+		set inout_state = '1'
+		where 18 > to_char(inout_intime,'hh24') 
+		and inout_member = #{inout_member}
+	</update>
+	
+<!-- 	결석체크 -->
+	<update id="noInCheck">
+		update inout
+		set inout_state = '2'
+		where inout_member = #{inout_member}
+		and 18 > to_char(inout_intime,'hh24') 
+	</update>
+
+<!-- 초과근무시간 설정-->
+	<update id="updateOver">
+		  update inout
+	      set inout_overtime = to_char(inout_outtime,'hh24')-18
+	      where to_char(inout_outtime,'hh24')>18 
+	      and inout_member = #{inout_member}
+	</update>
+	
+<!-- 	월 내역조회 -->
+	<select id="listMonth" parameterType="int" resultType="it.net.sky.inout.vo.InoutVo"> 
+		select * 
+		from inout 
+		where inout_member = #{inout_member}
+		  and substr(inout_date,4,2) = substr(sysdate,4,2)
+	</select>
+	
+<!-- 	이번달 지각현황 -->
+	<select id="monthLate">
+		select * from inout
+		where inout_member = #{inout_member}
+		and substr(inout_date,4,2) = substr(sysdate,4,2)
+		and inout_state = 1
+	</select>
+	
+
+	
+	
+</mapper>

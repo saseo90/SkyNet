@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="notice">
+	<!-- 동적 쿼리문 만들기 ! -->
+	<sql id="dynamic">
+		<if test="ntype != ''">
+			<if test="ntype == 'notice_type'">
+				where notice_type like #{ntype}
+			</if>
+		</if>
+		<if test="ktype != ''">
+			<if test="kword == 'notice_title'">
+				and notice_title like '%'||#{kword}||'%'
+			</if>
+			<if test="kword == 'notice_content'">
+				and notice_content like '%'||#{kword}||'%'
+			</if>
+		</if>
+	</sql>
+
+	<!-- 게시글 수 구하기 -->
+	<select id="getListCount" resultType="int" parameterType="Map">
+		select		COUNT(*) 
+		from		NOTICE 
+		order by	NOTICE_NUM	asc
+		<include refid="dynamic" />
+	</select>
+	
+	<!-- 목록보기 -->
+	<select id="getNoticeList" resultType="it.net.sky.notice.vo.NoticeVo">
+		select		NOTICE_NUM
+				,	NOTICE_TITLE
+				,	NOTICE_CONTENT
+				,	NOTICE_WRITER
+				,	TO_CHAR(NOTICE_DATE, 'yyyy-mm-dd') as NOTICE_DATE
+				,	NOTICE_READCNT
+				,	NOTICE_STATE
+				,	NOTICE_TYPE
+		from		NOTICE 
+		where 		NOTICE_STATE = 'N' 
+		order by 	NOTICE_NUM desc
+	</select>
+	
+	<!-- 게시글 추가 -->
+	<insert id="insertNotice" parameterType="it.net.sky.notice.vo.NoticeVo">
+		<selectKey keyProperty="notice_num" resultType="int" order="BEFORE">
+			select PK_NOTICE_NUM.nextval from DUAL
+		</selectKey>
+		insert into NOTICE (
+				NOTICE_NUM
+			, 	NOTICE_TITLE
+			, 	NOTICE_CONTENT
+			,	NOTICE_WRITER
+			, 	NOTICE_DATE
+			, 	NOTICE_STATE
+			,	NOTICE_READCNT
+			, 	NOTICE_TYPE
+		) values (
+				#{notice_num}
+			, 	#{notice_title}
+			, 	#{notice_content}
+			, 	#{notice_writer}
+			, 	sysdate
+			, 	#{notice_state}
+			, 	0
+			, 	#{notice_type}
+		)
+	</insert>
+	
+	<!-- 게시글 상세보기 -->
+	<select id="selectNotice" parameterType="int" resultType="it.net.sky.notice.vo.NoticeVo">
+		select	NOTICE_NUM
+			,	NOTICE_TITLE
+			,	NOTICE_CONTENT
+			,	NOTICE_WRITER
+			,	TO_CHAR(NOTICE_DATE, 'yyyy-mm-dd') as NOTICE_DATE
+			,	NOTICE_READCNT
+			,	NOTICE_STATE
+			,	NOTICE_TYPE
+		from 	NOTICE 
+		where 	NOTICE_NUM = #{notice_num}
+	</select>
+	
+	<!-- 조회 수 증가 -->
+	<update id="updateReadCnt">
+		update	NOTICE 
+		set		NOTICE_READCNT = NOTICE_READCNT + 1
+		where 	NOTICE_NUM = #{notice_num}
+	</update>
+	
+	<!-- 게시글 수정 -->
+	<update id="updateNotice" parameterType="it.net.sky.notice.vo.NoticeVo">
+		update	NOTICE 
+		set		NOTICE_TITLE = #{notice_title}
+			,	NOTICE_CONTENT = #{notice_content}
+		where	NOTICE_NUM = #{notice_num}
+	</update>
+	
+	<!-- 게시글 삭제 -->
+	<update id="deleteNotice" parameterType="Map">
+		update	NOTICE
+		set		NOTICE_STATE = #{notice_type}
+		where	NOTICE_NUM = #{notice_num}
+	</update>
+<!-- 	<delete id="deleteNotice" parameterType="int"> -->
+<!-- 		delete from NOTICE where NOTICE_NUM = #{notice_num} -->
+<!-- 	</delete> -->
+	
+</mapper>

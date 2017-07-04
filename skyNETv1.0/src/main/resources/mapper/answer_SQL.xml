@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="answer">
+<!-- 댓글쓰기 -->
+	<insert id="writeAnswer" parameterType="it.net.sky.suggest.vo.AnswerVo">
+		insert into SUGANS values
+		(
+		PK_SUGANS_NUM.nextval,
+		#{ans_sugnum},
+		#{ans_id},
+		#{ans_name},
+		#{ans_cont},
+		sysdate,
+		0
+		)
+	</insert>
+	
+	
+<!-- 글에대한 댓글 조회 -->
+	<select id="selectAnswer" resultType="it.net.sky.suggest.vo.AnswerVo">
+		select * from SUGANS where ans_sugnum = #{ans_sugnum} and ans_del = 0 order by ans_regdate asc
+	</select>
+
+
+<!-- 	글수정 -->
+	<update id="updateAnswer" parameterType="it.net.sky.suggest.vo.AnswerVo">
+		update SUGANS set ANS_CONT = #{ANS_CONT}
+						  where ANS_NO = #{ANS_NO}
+	</update>	
+	
+	
+	
+<!-- 	댓글삭제 -->
+	   <update id="deleteAnswer" parameterType="int">
+     		 update SUGANS set ANS_DEL = ANS_DEL+1
+              				where ANS_NO= #{ANS_NO}
+ 	  </update>	
+
+
+<!-- 	원글삭제 -->
+	   <update id="deleteNum" parameterType="int">
+     		 update SUGANS set ANS_DEL = ANS_DEL+1
+              				where ANS_NO= #{ANS_NO}
+ 	  </update>	
+
+</mapper>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="join">
+	<insert id="insertMember" parameterType="it.net.sky.join.vo.JoinVo">
+		insert into MEMBERJOIN(MEMBER_ENUM, MEMBER_DEPARTMENT, MEMBER_RANK, MEMBER_PASS, MEMBER_EMAIL, MEMBER_PHONE,
+			MEMBER_ADRESS, MEMBER_BIRTH, MEMBER_PROFILE, MEMBER_REGDATE, MEMBER_RESIGNATIONDATE, MEMBER_SIGN, MEMBER_NAME)
+			values(#{member_enum}, #{member_department}, #{member_rank}, #{member_pass}, #{member_email}, #{member_phone}, 
+			#{member_adress}, #{member_birth}, #{member_profile}, #{member_regdate}, #{member_resignationdate}, #{member_sign}, #{member_name})
+	</insert>
+</mapper>

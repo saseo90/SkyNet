@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="videocategory">
+	
+	
+	
+	<resultMap type="it.net.sky.video.vo.VideoCategoryVo" id="typeMap">
+  		<result property="typecategory" column="typecategory"/>
+  	 	<result property="depcode" column="depcode"/>
+   		
+	</resultMap> 
+	 
+	
+	
+	
+	 <select id="selecttypecategory" resultMap="typeMap">
+	
+	select typecategory from videocategory order by decode(typecategory,'없음',1) ,typecategory
+	
+	
+	</select> 
+	
+	<!-- 중복검사 -->
+	<select id="typedistinct" resultType="string">
+	
+	select typecategory from videocategory where typecategory = #{typecategory} 
+	
+	
+	</select> 
+	
+	
+	
+	
+	<insert id="insertvideocategory" parameterType="it.net.sky.video.vo.VideoCategoryVo">
+		INSERT INTO VIDEOCATEGORY (typecategory)VALUES (
+				
+				#{typecategory,jdbcType=VARCHAR}
+			
+							
+			
+			)
+	
+	</insert>
+	
+	
+	
+	
+	<delete id="deletevideocategory" parameterType="string">
+	delete from VIDEOCATEGORY where typecategory = #{typecategory}  and typecategory != '없음'
+	
+	</delete>  
+	
+	
+	
+	<!-- 
+	
+	<update id="updatevideocomplete" parameterType="it.net.sky.video.vo.ConnectVideoVo">
+	
+	update connectvideo set complete = #{complete,jdbcType=VARCHAR}, watchinfo = #{watchinfo,jdbcType=INTEGER}
+	where bnum = #{bnum,jdbcType=INTEGER}
+	
+	</update>
+	
+	
+	
+	
+	
+	<insert id="insertvideocomplete" parameterType="it.net.sky.video.vo.ConnectVideoVo">
+		
+	
+		INSERT INTO CONNECTVIDEO VALUES (
+				
+				#{member_enum,jdbcType=VARCHAR},
+				#{bnum,jdbcType=INTEGER},
+				#{complete,jdbcType=VARCHAR},
+				#{watchinfo,jdbcType=INTEGER}
+				
+			
+			)
+	
+	
+	
+		
+
+	</insert>
+
+	 <update id="updateinfo" parameterType="int">
+	update videoinfo set bnum = 0
+	where bnum = #{bnum}
+	
+	</update>
+	
+	
+	
+	<delete id="deletevideocomplete" parameterType="int">
+	delete from connectvideo where bnum = #{bnum}
+	
+	</delete>  -->
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+</mapper>

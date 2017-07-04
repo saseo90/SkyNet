@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="business">
+	<select id="listCard" parameterType="String"
+		resultType="it.net.sky.businessCard.vo.BusinessCardVo">
+		select * from businessCard where business_regid=#{id,jdbcType=VARCHAR}
+	</select>
+	<insert id="addCard" parameterType="it.net.sky.businessCard.vo.BusinessCardVo">
+		insert into businesscard
+		values (
+		#{business_Name,jdbcType=VARCHAR},
+		#{business_Co,jdbcType=VARCHAR},
+		#{business_Tel,jdbcType=VARCHAR},
+		#{business_Rank,jdbcType=VARCHAR},
+		#{business_RegId,jdbcType=VARCHAR},
+		seq_business.nextval)
+
+	</insert>
+	<delete id="removeCard" parameterType="java.lang.Integer">
+		DELETE FROM BUSINESSCARD WHERE business_seq = #{business_seq,jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

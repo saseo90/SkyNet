@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="videoconnect">
+
+    <resultMap type="it.net.sky.video.vo.ConnectVideoVo" id="connectMap">
+        <result property="member_enum" column="member_enum" />
+        <result property="bnum" column="bnum" />
+        <result property="complete" column="complete" />
+        <result property="watchinfo" column="watchinfo" />
+    </resultMap>
+
+
+    <select id="selectvideocomplete" resultType="it.net.sky.video.vo.ConnectVideoVo"
+        parameterType="it.net.sky.video.vo.ConnectVideoVo">
+        select * from connectvideo where bnum = #{bnum,jdbcType=INTEGER} and
+        member_enum = #{member_enum,jdbcType=VARCHAR}
+    </select>
+
+    <update id="updatevideocomplete" parameterType="it.net.sky.video.vo.ConnectVideoVo">
+        update connectvideo set complete = #{complete,jdbcType=VARCHAR}, watchinfo =
+        #{watchinfo,jdbcType=INTEGER}
+        where bnum = #{bnum,jdbcType=INTEGER} and member_enum = #{member_enum}
+    </update>
+
+    <update id="updateAllvideocomplete" parameterType="it.net.sky.video.vo.ConnectVideoVo">
+        update connectvideo set complete = #{complete,jdbcType=VARCHAR}, watchinfo =
+        #{watchinfo,jdbcType=INTEGER}
+        where bnum = #{bnum,jdbcType=INTEGER}
+    </update>
+
+    <insert id="insertvideocomplete" parameterType="it.net.sky.video.vo.ConnectVideoVo">
+        INSERT INTO CONNECTVIDEO VALUES (
+        #{member_enum,jdbcType=VARCHAR},
+        #{bnum,jdbcType=INTEGER},
+        #{complete,jdbcType=VARCHAR},
+        #{watchinfo,jdbcType=INTEGER}
+        )
+    </insert>
+    <!-- <update id="updateinfo" parameterType="int"> -->
+    <!-- update videoinfo set bnum = 0 -->
+    <!-- where bnum = #{bnum} -->
+    <!-- </update> -->
+    <delete id="deletevideocomplete" parameterType="int">
+        delete from connectvideo where bnum = #{bnum}
+    </delete>   
+
+</mapper>

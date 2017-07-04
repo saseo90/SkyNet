@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="survey">
+	<resultMap type="it.net.sky.survey.vo.SurveyVo" id="surveyVo">
+		<result property="survey_num" column="survey_num" />
+		<result property="survey_title" column="survey_title" />
+		<result property="survey_content" column="survey_content" />
+		<result property="survey_writer" column="survey_writer" />
+		<result property="survey_start" column="survey_start" />
+		<result property="survey_end" column="survey_end" />
+		<result property="survey_state" column="survey_state" />
+		<result property="survey_count" column="survey_count" />
+		<collection property="Question" column="survey_num"
+			javaType="java.lang.String" ofType="it.net.sky.survey.vo.SurveyChkVo"
+			select="survey.getChkList" />
+		<collection property="chkList" column="survey_num"
+			javaType="java.lang.String" ofType="it.net.sky.survey.vo.SurveyChkVo"
+			select="survey.getChkList" />
+		<collection property="infoList" column="survey_num"
+			javaType="java.util.ArrayList" ofType="it.net.sky.survey.vo.SurveyInfoVo"
+			select="survey.getInfoList" />
+	</resultMap>
+
+	<!-- 설문목록 survey.getSurveyList -->
+	<select id="getSurveyList" resultType="it.net.sky.survey.vo.SurveyVo">
+		select	SURVEY_NUM
+			,	SURVEY_TITLE
+			,	SURVEY_CONTENT
+			,	SURVEY_WRITER
+			,	TO_CHAR(SURVEY_START, 'yyyy-mm-dd') as SURVEY_START
+			,	TO_CHAR(SURVEY_END, 'yyyy-mm-dd') as SURVEY_END
+			,	SURVEY_STATE
+			,	SURVEY_COUNT
+		from	SURVEY
+		where	SURVEY_STATE != '삭제' 
+		order by SURVEY_NUM desc
+	</select>
+	
+	<!-- 선택지 목록 survey.getChkList -->
+	<select id="getChkList" parameterType="int"
+		resultType="it.net.sky.survey.vo.SurveyChkVo">
+		select	SURVEYCHK_GNUM
+			,	SURVEYCHK_QNUM
+			,	SURVEYCHK_QCONTENT
+			,	SURVEYCHK_ANUM
+			,	SURVEYCHK_ACONTENT
+			,	SURVEYCHK_COUNT
+		from	SURVEYCHK 
+		where	SURVEYCHK_GNUM = #{surveychk_gnum}
+		order by SURVEYCHK_ANUM
+	</select>
+	
+	<!-- info 목록 survey.getInfoList -->
+	<select id="getInfoList" parameterType="int"
+		resultType="it.net.sky.survey.vo.SurveyInfoVo">
+		select	SURVEYINFO_GNUM
+			,	SURVEYINFO_QNUM
+			,	SURVEYINFO_MEMBER
+			,	SURVEYINFO_CHK
+		from	SURVEYINFO 
+		where	SURVEYINFO_GNUM = #{surveyinfo_gnum}
+	</select>
+	
+	<!-- 메인 리스트 가져오기 - 로그인한 회원이 응답하지 않은 것만 가져옴!
+		survey.getMainList	 -->
+	<select id="getMainList" parameterType="String"
+		resultType="it.net.sky.survey.vo.SurveyVo">
+		select	A.SURVEY_NUM
+			,	A.SURVEY_TITLE
+			,	TO_CHAR(A.SURVEY_END, 'yyyy-mm-dd') as SURVEY_END
+		from	SURVEY A, SURVEYINFO B
+		where	A.SURVEY_NUM != B.SURVEYINFO_GNUM
+		and		B.SURVEYINFO_MEMBER = #{surveyinfo_member}
+		and		A.SURVEY_STATE = '진행'
+	</select>
+
+	<!-- 설문등록 survey.insertSurvey -->
+	<insert id="insertSurvey" parameterType="it.net.sky.survey.vo.SurveyVo">
+		<selectKey keyProperty="survey_num" resultType="int" order="BEFORE">
+			select PK_SURVEY_NUM.nextval from DUAL
+		</selectKey>
+		insert into SURVEY (
+				 	SURVEY_NUM
+				,	SURVEY_TITLE
+				,	SURVEY_CONTENT
+				,	SURVEY_WRITER
+				,	SURVEY_START
+				,	SURVEY_END
+				,	SURVEY_STATE
+				,	SURVEY_COUNT
+		) values (
+					#{survey_num}
+				,	#{survey_title}
+				,	#{survey_content}
+				,	#{survey_writer}
+				,	sysdate
+				,	#{survey_end}
+				,	'진행'
+				,	0
+		)
+	</insert>
+
+	<!-- 질문지 등록 survey.insertChk -->
+	<insert id="insertChk" parameterType="java.util.Map">
+		INSERT ALL
+		<foreach collection="list" item="item" index="index">
+			into SURVEYCHK
+			values (
+					#{item.surveychk_gnum}
+				,	#{item.surveychk_qnum}
+				,	#{item.surveychk_qcontent}
+				,	#{item.surveychk_anum}
+				,	#{item.surveychk_acontent}
+				,	0
+			)
+		</foreach>
+		select * from dual
+	</insert>
+
+	<!-- info 저장 survey.insertInfo -->
+	<insert id="insertInfo" parameterType="it.net.sky.survey.vo.SurveyInfoVo">
+		insert into	SURVEYINFO
+		values	( 
+				#{surveyinfo_gnum}
+			,	#{surveyinfo_qnum}
+			,	#{surveyinfo_member}
+			, 	#{surveyinfo_chk}
+		)
+	</insert>
+
+	<!-- 상세보기 survey.getSurvey -->
+	<select id="getSurvey" parameterType="int"
+		resultType="it.net.sky.survey.vo.SurveyVo">
+		select	SURVEY_NUM
+			,	SURVEY_TITLE
+			,	SURVEY_CONTENT
+			,	SURVEY_WRITER
+			,	TO_CHAR(SURVEY_START, 'yyyy-mm-dd') as SURVEY_START
+			,	TO_CHAR(SURVEY_END, 'yyyy-mm-dd') as SURVEY_END
+			,	SURVEY_STATE
+			,	SURVEY_COUNT
+		from 	SURVEY 
+		where 	SURVEY_NUM = #{survey_num}
+	</select>
+
+	<!-- 투표 !!결과 업데이트 survey.updateCount -->
+	<update id="updateCount" parameterType="int">
+		update	SURVEY
+		set		SURVEY_COUNT = SURVEY_COUNT + 1
+		where 	SURVEY_NUM = #{survey_num}
+	</update>
+
+	<!--해당선택지 응답수 업데이트 survey.updateChk -->
+	<update id="updateChk" parameterType="java.util.Map">
+		update	SURVEYCHK
+		set		SURVEYCHK_COUNT = SURVEYCHK_COUNT + 1
+		where 	SURVEYCHK_GNUM = #{surveychk_gnum}
+		and 	SURVEYCHK_ANUM = #{surveychk_anum}
+	</update>
+
+	<!-- 투표한 사원 가져오기 survey.getVoteMember -->
+	<select id="getVoteMember" parameterType="int"
+		resultType="it.net.sky.survey.vo.SurveyInfoVo">
+		select	SURVEYINFO_MEMBER 
+		from 	SURVEYINFO
+		where 	SURVEYINFO_GNUM = #{surveyinfo_gnum}
+	</select>
+
+	<!-- 마감일 지나면 완료 설정 survey.updateState -->
+	<update id="updateState" >
+		update	SURVEY
+		set 	SURVEY_STATE = '완료'
+		where 	SYSDATE >= SURVEY_END+1
+		and		SURVEY_STATE != '삭제'
+	</update>
+	
+	<!-- 설문지 강제 마감 ! survey.updateState2 -->
+	<update id="updateState2" parameterType="int">
+		update	survey
+		set		survey_state = '완료'
+		where	survey_num = #{survey_num}
+	</update>
+
+	<!-- 설문지 삭제 survey.deleteSurvey -->
+	<update id="deleteSurvey" parameterType="int">
+		update	SURVEY
+		set		SURVEY_STATE = '삭제'
+		where	SURVEY_NUM = #{survey_num}
+	</update>
+</mapper>

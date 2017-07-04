@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="suggest">
+
+<!-- 전체조회 -->
+	<select id="listAll" resultType="it.net.sky.suggest.vo.SuggestVo">
+		select * from SUGGEST order by sug_gnum desc, sug_onum asc
+	</select>
+
+<!-- 글쓰기 -->
+	<insert id="writeSuggest" parameterType="it.net.sky.suggest.vo.SuggestVo">
+		insert into SUGGEST values
+		(
+		PK_SUGGEST_NUM.nextval,
+		PK_SUGGEST_NUM.currval,
+		0,
+		0,
+		#{sug_id},
+		#{sug_name},
+		#{sug_title},
+		#{sug_cont},
+		sysdate,
+		0,
+		0
+		)
+	</insert>
+	
+<!-- 	상세보기 -->
+	<select id="detailSuggest" resultType="it.net.sky.suggest.vo.SuggestVo" parameterType="int">
+		select * from SUGGEST where sug_num = #{sug_num} order by sug_gnum, sug_onum 
+	</select>
+	
+<!-- 	글삭제 -->
+	   <update id="deleteSuggest" parameterType="int">
+     		 update SUGGEST set sug_delete = sug_delete+1
+              				where sug_num= #{sug_num}
+ 	  </update>	
+ 	  
+<!-- 	<delete id="deleteSuggest" parameterType="int"> -->
+<!-- 		delete from suggest where sug_num = #{sug_num} -->
+<!-- 	</delete> -->
+	
+	
+<!-- 	글수정 -->
+	<update id="updateSuggest" parameterType="it.net.sky.suggest.vo.SuggestVo">
+		update suggest set sug_title = #{sug_title}
+						  ,sug_cont = #{sug_cont}
+						  where sug_num = #{sug_num}
+	</update>
+	
+<!-- 조회수증가 -->
+   <update id="countUp" parameterType="int">
+      update SUGGEST set sug_rcount = sug_rcount+1
+               where sug_num= #{sug_num}
+   </update>	
+	
+	
+<!-- 	답글등록 -->
+   <insert id="insertReply" parameterType="it.net.sky.suggest.vo.SuggestVo">
+      insert into SUGGEST values
+     				( 
+      				PK_SUGGEST_NUM.nextval,
+                    #{sug_gnum, jdbcType=INTEGER},
+                    #{sug_onum, jdbcType=INTEGER},
+                    #{sug_nested, jdbcType=INTEGER},
+                    #{sug_id, jdbcType=VARCHAR},
+                    #{sug_name, jdbcType=VARCHAR},
+                    #{sug_title, jdbcType=VARCHAR},
+                    #{sug_cont, jdbcType=VARCHAR},
+                    sysdate,
+                    0,
+                    0
+                    )
+   </insert>
+	
+</mapper>

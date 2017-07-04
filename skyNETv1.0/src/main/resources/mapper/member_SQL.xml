@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+
+<select id="listAll" resultType="it.net.sky.member.vo.MemberVo">
+	select MEMBERJOIN.MEMBER_ENUM
+		  ,DEPARTMENTCODE.DEP_NAME
+		  ,RANKCODE.RANK_NAME 
+		  ,MEMBERJOIN.MEMBER_EMAIL
+		  ,MEMBERJOIN.MEMBER_PHONE
+		  ,MEMBERJOIN.MEMBER_ADRESS
+		  ,MEMBERJOIN.MEMBER_BIRTH
+		  ,MEMBERJOIN.MEMBER_PROFILE
+		  ,MEMBERJOIN.MEMBER_REGDATE
+		  ,MEMBERJOIN.MEMBER_RESIGNATIONDATE
+		  ,MEMBERJOIN.MEMBER_SIGN
+		  ,MEMBERJOIN.MEMBER_NAME		  
+	from MEMBERJOIN
+	INNER JOIN RANKCODE ON (MEMBERJOIN.MEMBER_RANK = RANKCODE.RANK_ID)
+	INNER JOIN DEPARTMENTCODE ON (MEMBERJOIN.MEMBER_DEPARTMENT = DEPARTMENTCODE.DEP_ID)
+	order by member_enum desc
+</select>
+
+
+<select id="detailMember" resultType="it.net.sky.member.vo.MemberVo" parameterType="int">
+		select MEMBERJOIN.MEMBER_ENUM
+		  ,DEPARTMENTCODE.DEP_NAME
+		  ,RANKCODE.RANK_NAME 
+		  ,MEMBERJOIN.MEMBER_EMAIL
+		  ,MEMBERJOIN.MEMBER_PHONE
+		  ,MEMBERJOIN.MEMBER_ADRESS
+		  ,MEMBERJOIN.MEMBER_BIRTH
+		  ,MEMBERJOIN.MEMBER_PROFILE
+		  ,MEMBERJOIN.MEMBER_REGDATE
+		  ,MEMBERJOIN.MEMBER_RESIGNATIONDATE
+		  ,MEMBERJOIN.MEMBER_SIGN
+		  ,MEMBERJOIN.MEMBER_NAME		  
+	from MEMBERJOIN
+	INNER JOIN RANKCODE ON (MEMBERJOIN.MEMBER_RANK = RANKCODE.RANK_ID)
+	INNER JOIN DEPARTMENTCODE ON (MEMBERJOIN.MEMBER_DEPARTMENT = DEPARTMENTCODE.DEP_ID)
+	where MEMBERJOIN.MEMBER_ENUM = #{member_enum}
+	order by member_enum desc
+	
+	
+</select>
+
+<!-- 이메일 -->
+<select id="getEmail" resultType="string" parameterType="string">
+	select MEMBER_EMAIL from MEMBERJOIN where MEMBER_ENUM = #{member_enum}
+</select>
+
+<!-- 이메일 -->
+<select id="listDepart" resultType="it.net.sky.member.vo.MemberVo" parameterType="String">
+	select MEMBERJOIN.MEMBER_ENUM
+		  ,DEPARTMENTCODE.DEP_NAME
+		  ,RANKCODE.RANK_NAME 
+		  ,MEMBERJOIN.MEMBER_EMAIL
+		  ,MEMBERJOIN.MEMBER_PHONE
+		  ,MEMBERJOIN.MEMBER_ADRESS
+		  ,MEMBERJOIN.MEMBER_BIRTH
+		  ,MEMBERJOIN.MEMBER_PROFILE
+		  ,MEMBERJOIN.MEMBER_REGDATE
+		  ,MEMBERJOIN.MEMBER_RESIGNATIONDATE
+		  ,MEMBERJOIN.MEMBER_SIGN
+		  ,MEMBERJOIN.MEMBER_NAME		  
+	from MEMBERJOIN
+	INNER JOIN RANKCODE ON (MEMBERJOIN.MEMBER_RANK = RANKCODE.RANK_ID)
+	INNER JOIN DEPARTMENTCODE ON (MEMBERJOIN.MEMBER_DEPARTMENT = DEPARTMENTCODE.DEP_ID)
+	WHERE MEMBER_RANK = 
+	(select member_rank
+	from MEMBERJOIN 
+	where MEMBER_ENUM = #{member_department})
+	order by member_enum desc
+</select>
+
+
+<select id="getEmails" resultType="String" parameterType="map">
+	select MEMBER_EMAIL from MEMBERJOIN where MEMBER_ENUM in 
+	<foreach collection="email" item="item" index="index" separator="," open="(" close=")">
+	#{item}
+	</foreach>
+</select>
+
+<update id="updateMember">
+	update MEMBERJOIN set member_email = #{member_email}
+						 ,member_adress = #{member_adress}
+						 ,member_phone = #{member_phone}
+				where member_enum = #{member_enum}		 
+</update>
+
+
+</mapper>

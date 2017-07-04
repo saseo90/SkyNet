@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+    <!-- DispatcherServlet Context: defines this servlet's request-processing 
+        infrastructure -->
+
+	
+    <!-- Enables the Spring MVC @Controller programming model -->
+    <annotation-driven>
+        <message-converters>
+            <beans:bean
+                class="org.springframework.http.converter.StringHttpMessageConverter">
+                <beans:property name="supportedMediaTypes">
+                    <beans:list>
+                        <beans:value>text/html;charset=UTF-8
+                        </beans:value>
+                    </beans:list>
+                </beans:property>
+            </beans:bean>
+             <beans:bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <beans:property name="supportedMediaTypes">
+                    <beans:list>
+                        <beans:value>application/json;charset=UTF-8</beans:value>
+                    </beans:list>
+                </beans:property>
+            </beans:bean>
+        </message-converters>
+    </annotation-driven>
+   <beans:bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
+   <beans:bean id="jackson2MessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+
+    <!-- 인터셉터 부분 -->
+
+    <!-- <interceptors> -->
+    <!-- <interceptor> -->
+    <!-- <mapping path="/report/*"/> -->
+    <!-- <mapping path="/calendar/*"/> -->
+    <!-- <mapping path="/label/*"/> -->
+    <!-- <mapping path="/cloud/*"/> -->
+    <!-- <mapping path="/suggest/*"/> -->
+    <!-- <mapping path="/memberJoinForm/*"/> -->
+    <!-- <mapping path="/notice/*"/> -->
+    <!-- <beans:bean class="it.net.sky.login.controller.IntereporLogin" /> -->
+    <!-- </interceptor> -->
+    <!-- </interceptors> -->
+
+
+
+    <!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+        up static resources in the ${webappRoot}/resources directory -->
+    <resources mapping="/resources/**" location="/resources/" />
+    <resources mapping="/report/**" location="/report/" />
+	<resources mapping="/videosave/**" location="/videosave/" />
+
+	
+
+    <!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+        in the /WEB-INF/views directory -->
+    <beans:bean
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+        p:order="3">
+        <beans:property name="prefix" value="/WEB-INF/pages/" />
+        <beans:property name="suffix" value=".jsp" />
+        <beans:property name="contentType" value="text/html;charset=UTF-8" />
+
+        <!-- <beans:property name="order" value="1"/> -->
+    </beans:bean>
+    <!-- <beans:bean class="org.springframework.web.servlet.view.BeanNameViewResolver"> -->
+    <!-- <beans:property name="order" value="0"/> -->
+    <!-- </beans:bean> -->
+
+
+    <!-- Tiles ViewResolver : 페이지 호출시 실행 페이지연결담당 Configurer : 참조할 tiles 셋팅 -->
+    <beans:bean id="tilesViewResolver"
+        class="org.springframework.web.servlet.view.UrlBasedViewResolver"
+        p:order="1"
+        p:viewClass="org.springframework.web.servlet.view.tiles3.TilesView"
+        >
+    </beans:bean>
+
+    <beans:bean id="tilesConfigurer"
+        class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+        <beans:property name="definitions">
+            <beans:list>
+                <beans:value>/WEB-INF/tiles.xml</beans:value>
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+    <context:component-scan base-package="it.net.sky" />
+    <context:annotation-config/>
+    <task:scheduler id="mainScheduler" pool-size="10" />
+    <task:annotation-driven scheduler="mainScheduler" />
+
+	
+    <util:properties id="memberProp"
+        location="classpath:it/net/sky/config/membersave.properties" />
+
+    <util:properties id="videoProp"
+        location="classpath:it/net/sky/config/videosave.properties" />
+
+    <beans:bean id="viewResolver"
+        class="org.springframework.web.servlet.view.BeanNameViewResolver"
+        p:order="2"
+        >
+    </beans:bean>
+    <beans:bean id="downloadView" class="it.net.sky.cloud.vo.DownloadView"></beans:bean>
+    
+    <beans:bean id="memberExcel" class="it.net.sky.util.poi.MemberExcel" />
+    <beans:bean id="memberPdf" class="it.net.sky.util.itext.MemberPdf" />
+
+   <beans:bean id="excelView" class="it.net.sky.inout.controller.ExcelView"/>
+   <beans:bean id="pdfView" class="it.net.sky.inout.controller.PDFView"/>
+
+
+	
+</beans:beans>

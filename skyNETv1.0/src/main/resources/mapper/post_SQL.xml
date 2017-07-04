@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="post">
+	<select id="selectList" parameterType="it.net.sky.login.vo.LoginVo"
+		resultType="it.net.sky.post.vo.PostVo">
+		select * from post where
+		PostId=#{member_enum,jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="it.net.sky.login.vo.LoginVo">
+		insert INTO post values
+		(seq_post.nextval,
+		#{PostId,jdbcType=VARCHAR},
+		#{postCont,jdbcType=VARCHAR},
+		sysdate,
+		#{post_delteDate,jdbcType=DATE})
+	</insert>
+	<delete id="delete" parameterType="java.util.Map">
+		delete from post
+		where
+		<foreach index="index" collection="list" item="item"  separator="or">
+			postNo=#{item.postNo}
+		</foreach>
+	</delete>
+</mapper> 

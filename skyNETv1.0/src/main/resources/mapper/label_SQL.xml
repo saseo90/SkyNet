@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="label">
+	<resultMap type="it.net.sky.label.vo.LabelVo" id="labelMap">
+		<result property="label_num" column="label_num"/>
+		<result property="label_name" column="label_name"/>
+		<result property="label_color" column="label_color"/>
+		<result property="label_document" column="label_document"/>
+		<result property="label_gnum" column="label_gnum"/>
+		<result property="label_onum" column="label_onum"/>
+		<result property="label_nested" column="label_nested"/>
+		<result property="reg_id_label" column="reg_id_label"/>
+	</resultMap>
+
+
+
+
+	<select id="selectlabel" resultMap="labelMap" parameterType="string">
+		select * from label where reg_id_label = #{id}  and label_num != 0 order by label_gnum,label_onum,label_num
+	</select>
+	<!-- 상위 gnum 가져오기 -->
+	<select id="selectone" resultType="int" parameterType="int">
+		select label_gnum from label where label_num = #{label_num}
+	</select>
+	
+	<insert id="insertlabel" parameterType="it.net.sky.label.vo.LabelVo">
+		<selectKey keyProperty="label_num" resultType="int" order="BEFORE">
+		select PK_LABEL_NUM.nextval from dual
+		</selectKey>
+	insert into label(label_num,label_name,label_color,label_document,label_gnum,label_onum,label_nested,REG_ID_LABEL) values (#{label_num,jdbcType=INTEGER},#{label_name,jdbcType=VARCHAR},#{label_color,jdbcType=VARCHAR},0,PK_LABEL_NUM.currval,0,0,#{reg_id_label,jdbcType=VARCHAR})
+	
+	</insert>
+	
+	<select id="highlabel" resultMap="labelMap" parameterType="string">
+		select * from label where reg_id_label = #{id} and label_onum = 0 and label_nested=0 order by label_num
+	</select>
+	
+	<insert id="insertlow" parameterType="it.net.sky.label.vo.LabelVo">
+<!-- 		<selectKey keyProperty="label_num" resultType="int" order="BEFORE"> -->
+<!-- 		select PK_LABEL_NUM.nextval from dual -->
+<!-- 		</selectKey> -->
+	insert into label(label_num,label_name,label_color,label_document,label_gnum,label_onum,label_nested,REG_ID_LABEL) values (PK_LABEL_NUM.nextval,#{label_name,jdbcType=VARCHAR},#{label_color,jdbcType=VARCHAR},0,#{label_gnum,jdbcType=INTEGER},#{label_onum,jdbcType=INTEGER},#{label_nested,jdbcType=INTEGER},#{reg_id_label,jdbcType=VARCHAR})
+	
+	</insert>
+	<!-- 상위 gnum 정보 가져오기 아니면 삭제로직에 쓴다-->
+	<select id="lowInfo"  parameterType="int" resultMap="labelMap">
+	select * from label
+	where label_gnum=#{label_gnum} order by label_onum
+	</select>
+	
+	<!-- 상위 gnum 정보 가져오기 아니면 삭제로직에 쓴다222-->
+	<select id="lowInfo2"  parameterType="int" resultMap="labelMap">
+	select * from label where label_gnum = #{label_gnum} and label_onum = 0
+	</select>
+	
+	
+	
+	
+	<!-- 상세보기 -->
+	<select id="viewDetail" parameterType="int" resultMap="labelMap">
+	select * from label where label_num=#{label_num}
+	</select>
+	 
+	
+	<!-- 수정하기 -->
+	<update id="modifylabel" parameterType="it.net.sky.label.vo.LabelVo">
+	update label set label_name=#{label_name}, label_color=#{label_color}, label_gnum = #{label_gnum},label_onum = #{label_onum}, label_nested = #{label_nested}
+	where label_num = #{label_num}
+	</update>
+	
+	<!-- 상위 수정 -->
+	<select id="highModify" parameterType="int" resultType="int">
+	select count(label_gnum) from label where label_gnum = #{label_gnum}
+	</select>
+	
+	
+	<!-- 라벨 삭제 -->
+	<delete id="deletelabel" parameterType="int">
+	delete from label where label_num = #{label_num}
+	</delete>
+	
+	<!-- 라벨 삭제(그룹넘버로 삭제) -->
+	<delete id="deletelabelGnum" parameterType="int">
+	delete from label where label_gnum = #{label_gnum}
+	</delete>
+	
+	<!--문서 수  -->
+	<update id="updatedocu" parameterType="it.net.sky.label.vo.LabelVo">
+	update label set label_document = (select count(reg_labelnum) from report where reg_labelnum = #{label_num} and  REG_ID = #{reg_id_label})
+	where label_num = #{label_num}
+	
+	
+	</update>
+	
+	
+	<select id="labelnumlist" resultMap="labelMap">
+	select label_num from label
+	</select>
+	
+	
+</mapper>

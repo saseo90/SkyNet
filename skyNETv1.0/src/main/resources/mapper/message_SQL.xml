@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="message">
+    <insert id="sendMessage" parameterType="it.net.sky.message.vo.MessageVo">
+    INSERT INTO message 
+    (
+    msg_no,msg_sender,msg_receiver,msg_cont,msg_regDate,msg_leadDate,msg_delPreDate,msg_state
+    )VALUES(
+    PK_MESSAGE_NO.NEXTVAl ,#{msgSender,jdbcType=VARCHAR} ,#{msgReceiver,jdbcType=VARCHAR} ,#{msgCont,jdbcType=VARCHAR} ,SYSDATE ,NULL ,NULL ,'N'
+    )
+    </insert>
+    <update id="leadMessage" parameterType="it.net.sky.message.vo.MessageVo">
+    UPDATE message
+    SET    msg_leadDate   = SYSDATE
+           ,msg_delPreDate = SYSDATE+3
+    WHERE  msg_no = #{msgNo}
+    AND    msg_receiver = #{msgReceiver,jdbcType=VARCHAR}
+    </update>
+    <update id="modSaveMessage" parameterType="it.net.sky.message.vo.MessageVo">
+    UPDATE message
+    SET    msg_state = 'Y'
+    WHERE  msg_no = #{msgNo}
+    AND    msg_receiver = #{msgReceiver,jdbcType=VARCHAR}
+    </update>
+    <update id="modClearMesage" parameterType="it.net.sky.message.vo.MessageVo">
+    UPDATE message
+    SET    msg_state = 'N'
+    WHERE  msg_no = #{msgNo}
+    AND    msg_receiver = #{msgReceiver,jdbcType=VARCHAR}
+    </update>
+    <select id="allMyMessage" parameterType="string" resultType="it.net.sky.message.vo.MessageVo">
+    
+    SELECT msg_no AS msgNo
+    ,msg_sender AS msgSender 
+    ,msg_cont AS msgCont 
+    ,TO_CHAR(msg_regDate,'yyyy-mm-dd') AS msgRegDate 
+    ,NVL2(msg_leadDate,'Y','N') AS msgLeadDate 
+    ,msg_delPreDate AS msgDelPreDate 
+    ,msg_state AS msgState
+    ,CASE 
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0013 THEN '지금'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0026 THEN '3분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0052 THEN '7분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0104 THEN '15분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0208 THEN '30분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0250 THEN '45분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0417 THEN '1시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0834 THEN '2시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.125 THEN '3시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.25 THEN '6시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.5 THEN '12시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 2 THEN '1일전'
+          WHEN (SYSDATE - msg_regDate) &lt; 3 THEN '3일전'
+          WHEN (SYSDATE - msg_regDate) &gt;= 3 THEN to_char(msg_regDate,'yyyy-mm-dd')
+     END  AS time 
+    FROM   message
+    WHERE  msg_receiver = #{myNum,jdbcType=VARCHAR}
+    ORDER  BY TO_CHAR(msg_regDate,'yyyy-mm-dd') DESC ,msgState DESC ,msgLeadDate DESC
+    </select>
+    <select id="alarmMessage" parameterType="string" resultType="it.net.sky.message.vo.MessageVo">
+    SELECT msg_no AS msgNo,B.MEMBER_NAME AS msgSender ,msg_cont AS msgCont ,msg_regDate AS msgRegDate ,B.MEMBER_PROFILE AS senderProfile
+      ,CASE 
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0013 THEN '지금'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0026 THEN '3분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0052 THEN '7분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0104 THEN '15분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0208 THEN '30분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0250 THEN '45분전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0417 THEN '1시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.0834 THEN '2시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.125 THEN '3시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.25 THEN '6시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 0.5 THEN '12시간전'
+          WHEN (SYSDATE - msg_regDate) &lt; 2 THEN '1일전'
+          WHEN (SYSDATE - msg_regDate) &lt; 3 THEN '3일전'
+          WHEN (SYSDATE - msg_regDate) &gt;= 3 THEN to_char(msg_regDate,'yyyy-mm-dd')
+     END  AS time 
+    FROM   message A
+    INNER  JOIN memberJoin B ON(A.msg_sender = B.MEMBER_ENUM)
+    WHERE  msg_receiver = #{myNum,jdbcType=VARCHAR}
+    AND    msg_leadDate IS NULL
+    AND    msg_state = 'N'
+    ORDER  BY msg_regDate DESC
+    </select>
+    <delete id="deleteTimeMessage">
+    DELETE message
+    WHERE  to_char(msg_delPreDate,'yyyy-mm-dd') = to_char(SYSDATE,'yyyy-mm-dd')
+    AND    msg_state = 'N'
+    </delete>
+    <delete id="deleteMyMessage" parameterType="it.net.sky.message.vo.MessageVo">
+    DELETE message
+    WHERE  msg_no = #{msgNo,jdbcType=VARCHAR}
+    AND    msg_receiver = #{msgReceiver,jdbcType=VARCHAR}
+    </delete>
+    <select id="selectMyMsgCount" resultType="it.net.sky.message.vo.MyMsgCount">
+SELECT
+         nvl((SELECT COUNT(*)
+        FROM   message
+        WHERE  MSG_RECEIVER = '${keyword}'
+        AND    MSG_STATE    = 'N'
+        AND    msg_leadDate IS NULL
+        ),0) AS newMSG
+        ,nvl((SELECT COUNT(*)
+        FROM   message
+        WHERE  MSG_RECEIVER = '${keyword}'
+        AND    MSG_STATE    = 'N'
+        AND    msg_leadDate IS NOT NULL
+        ),0) AS oldMSG
+        ,nvl((SELECT COUNT(*)
+        FROM   message
+        WHERE  MSG_RECEIVER = '${keyword}'
+        AND    MSG_STATE    = 'Y'
+        ),0) AS saveMSG
+    FROM dual
+    </select>
+</mapper>

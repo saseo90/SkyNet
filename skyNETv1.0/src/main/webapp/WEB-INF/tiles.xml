@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+	<!-- 메인 -->
+	<definition name="index" template="/WEB-INF/pages/index.jsp">
+		<put-attribute name="main-header" value="/WEB-INF/pages/main-header.jsp" />
+		<put-attribute name="main-sidebar" value="/WEB-INF/pages/main-sidebar.jsp" />
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/main-content.jsp" />
+		<put-attribute name="main-footer" value="/WEB-INF/pages/main-footer.jsp" />
+		<put-attribute name="control-sidebar" value="/WEB-INF/pages/control-sidebar.jsp" />
+	</definition>
+	
+	<!-- 클라우드 : 신규계정접속 -->
+	<definition name="cloud/new" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/cloud/CloudNew.jsp" />
+	</definition>
+	
+	<!-- 클라우드 : 기존계정접속 -->
+	<definition name="cloud/cloud" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/cloud/CloudHome.jsp" />
+	</definition>
+
+	<!-- tiles 양식 <definition name="*/*/*" extends="index"> <put-attribute name="body" 
+		value="/WEB-INF/jsp/{1}.jsp"/> <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp"/> 
+		<put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp"/> </definition> -->
+	
+	<!-- 사원 등록 -->
+	<definition name="memberJoinForm" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/join/memberJoinForm.jsp" />
+	</definition>
+	
+	<!-- 개인프로필 -->
+	<definition name="profile" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/profile/profile.jsp" />
+	</definition>
+		
+	<!-- 개인프로필 본인확인 -->
+	<definition name="checkPW" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/profile/checkPW.jsp" />
+	</definition>
+	
+	<!-- 사원목록 -->
+	<definition name="memberList" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/member/memberList.jsp" />
+	</definition>
+	
+	<!-- 사원상세보기 -->
+	<definition name="memberDetail" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/member/memberDetail.jsp" />
+	</definition>
+
+	<!-- 레포트 진행상황 -->
+	<definition name="report/state" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/report/state.jsp" />
+	</definition>
+	<!-- 레포트 진행상황 -->
+	<definition name="report/state2" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/report/state2.jsp" />
+	</definition>
+	<!-- 레포트 작성 -->
+	<definition name="calendar" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/calendar/calendar.jsp" />
+	</definition>
+	
+	<!-- 켈린더 -->
+	<definition name="report/make" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/report/update.jsp" />
+	</definition>
+	
+	<!-- 라벨 -->
+	<definition name="label/labelManage" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/label/labelManage.jsp"/>
+	</definition>
+	
+	<!-- 공지사항 게시판 -->
+	<definition name="notice/*" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/notice/{1}.jsp"/>
+	</definition>
+	
+	<!-- 건의사항 전체조회-->
+	<definition name="suggestlist" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/suggest/suggestList.jsp"/>
+	</definition>
+	
+	<!-- 건의사항 글쓰기 폼 -->
+	<definition name="/suggest/suggestForm" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/suggest/suggestForm.jsp"/>
+	</definition>
+	
+	<!-- 건의사항 상세보기-->
+	<definition name="/suggest/suggestDetail" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/suggest/suggestDetail.jsp"/>
+	</definition>
+	
+	<!-- 건의사항 상세보기-->
+	<definition name="stats" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/stats/stats.jsp"/>
+	</definition>
+	
+	<!-- 건의사항 상세보기-->
+	<definition name="post/main" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/post/main.jsp"/>
+	</definition>
+	<!-- 서류 권한신청-->
+	<definition name="report/out/main" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/report/reportOut/surch.jsp"/>
+	</definition>
+	<!-- 서류 권한신청현황-->
+	<definition name="report/out/state" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/report/reportOut/state.jsp"/>
+	</definition>
+	<!-- 메일 -->
+	<definition name="mail/*" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/mailbox/{1}.jsp"/>
+	</definition>
+	
+	<!-- 근태관리 -->
+	<definition name="inout/*" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/inout/{1}.jsp"/>
+	</definition>
+	
+	<!-- 메뉴 커스터마이징 -->
+	<definition name="custommenu" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/custom/custommenu.jsp" />
+	</definition>
+	
+	<!-- 메인 커스터마이징 -->
+	<definition name="custom/custommain" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/custom/custommain.jsp" />
+	</definition>
+	
+	<!-- 라벨 -->
+	<definition name="video/videomain" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/video/videomain.jsp"/>
+	</definition>
+	
+	<!-- 동영상 메인 -->
+	<definition name="video/videomain" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/video/videomain.jsp"/>
+	</definition>
+	
+	<!-- 동영상 교육 업로드 -->
+	<definition name="video/videoupload" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/video/videoupload.jsp"/>
+	</definition>
+	
+	<!-- 설문조사 -->
+	<definition name="survey/*" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/survey/{1}.jsp"/>
+	</definition>
+	
+	<!-- 구인광고 페이스북 연동 등록 -->
+	<definition name="jobad/*" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/jobad/{1}.jsp"/>
+	</definition>
+	
+	<!-- 화상 채팅 -->
+	<definition name="videochatting" extends="index">
+		<put-attribute name="content-wrapper" value="/WEB-INF/pages/videochatting/videochatting.jsp"/>
+	</definition>
+</tiles-definitions>

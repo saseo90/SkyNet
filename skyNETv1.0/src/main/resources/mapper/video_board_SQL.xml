@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="video">
+
+    <resultMap type="it.net.sky.video.vo.VideoInfoVo" id="infoMap">
+        <result property="bnum" column="bnum" />
+        <result property="oriname" column="oriname" />
+        <result property="storedname" column="storedname" />
+        <result property="vsize" column="vsize" />
+    </resultMap>
+
+    <resultMap type="it.net.sky.video.vo.ConnectVideoVo" id="connectMap">
+        <id property="member_enum" column="cmember_enum" />
+        <result property="bnum" column="cbnum" />
+        <result property="complete" column="ccomplete" />
+        <result property="watchinfo" column="cwatchinfo" />
+    </resultMap>
+
+    <resultMap type="it.net.sky.video.vo.VideoBoardVo" id="videoMap">
+        <id property="bnum" column="vbnum" />
+        <result property="title" column="vtitle" />
+        <result property="content" column="vcontent" />
+        <result property="reg_date" column="vreg_date" />
+        <result property="category" column="vcategory" />
+        <result property="start_date" column="vstart_date" />
+        <result property="end_date" column="vend_date" />
+        <association property="connectvideo" column="vbnum"
+            javaType="it.net.sky.video.vo.ConnectVideoVo" resultMap="connectMap" />
+        <association property="vinfo" column="vbnum"
+            javaType="it.net.sky.video.vo.VideoInfoVo" resultMap="infoMap" />
+        <!-- <result property="complete" column="ccomplete"/> <result property="watchinfo" 
+            column="cwatchinfo" /> -->
+    </resultMap>
+
+<select id="selectvideo" resultMap="videoMap" parameterType="string">
+select v.bnum as "vbnum",
+   v.title as "vtitle",
+   v.content as "vcontent",
+   v.reg_date as "vreg_date",
+   v.category as "vcategory",
+   v.start_date as "vstart_date",
+   v.end_date as "vend_date",
+   c.complete as "ccomplete",
+   c.watchinfo as "cwatchinfo",
+   i.oriname
+    from videoboard v 
+left outer join connectvideo c on(v.bnum = c.bnum and c.member_enum=#{id,jdbcType=VARCHAR}) 
+left outer join videoinfo i on(v.bnum = i.bnum)
+where v.bnum !=0  order by v.bnum desc
+</select>
+
+<insert id="insertvideo" parameterType="it.net.sky.video.vo.VideoBoardVo">
+insert into videoboard values (PK_VIDEOBOARD_SEQ.nextval
+  ,#{title,jdbcType=VARCHAR}
+  ,#{content,jdbcType=VARCHAR}
+  ,sysdate
+  ,#{category,jdbcType=VARCHAR}
+  ,#{start_date,jdbcType=VARCHAR}
+  ,#{end_date,jdbcType=VARCHAR}
+  )
+</insert>
+
+<select id="selectbnum" resultType="it.net.sky.video.vo.VideoBoardVo" parameterType="int">
+select * from videoboard where bnum = #{bnum}
+</select>
+
+<update id="updatevideo" parameterType="it.net.sky.video.vo.VideoBoardVo">
+update videoboard set title = #{title,jdbcType=VARCHAR}, content = #{content,jdbcType=VARCHAR}, category = #{category,jdbcType=VARCHAR}, start_date = #{start_date,jdbcType=VARCHAR}, end_date = #{end_date,jdbcType=VARCHAR} 
+where bnum = #{bnum}
+</update>
+
+<delete id="deletevideo" parameterType="int">
+    delete from videoboard where bnum = #{bnum}
+</delete>
+
+<select id="selectcount" parameterType="string" resultType="map">
+    select count(v.bnum) as totcnt
+          ,count(decode(c.complete,'시청완료',0)) as mymv
+          ,count(decode(substr(c.complete,1,3),'시청중',0)) as mying
+          ,count(v.bnum)-(count(decode(c.complete,'시청완료',0))+count(decode(substr(c.complete,1,3),'시청중',0))) as mynomv
+       from videoboard v 
+left outer join connectvideo c on(v.bnum = c.bnum and c.member_enum=#{id,jdbcType=VARCHAR})
+    where v.bnum!=0 order by v.bnum desc
+</select>
+
+<select id="selectbytype" parameterType="map" resultMap="videoMap">
+select v.bnum as "vbnum",
+v.title as "vtitle",
+v.content as "vcontent",
+v.reg_date as "vreg_date",
+v.category as "vcategory",
+v.start_date as "vstart_date",
+v.end_date as "vend_date",
+c.complete as "ccomplete",
+c.watchinfo as "cwatchinfo",
+i.ORINAME 
+from videoboard v 
+left outer join connectvideo c on(v.bnum = c.bnum and c.member_enum=#{id,jdbcType=VARCHAR}) 
+left outer join videoinfo i on(v.bnum = i.bnum)
+where v.bnum !=0 and v.category=#{category,jdbcType=VARCHAR} order by v.bnum desc
+</select>
+
+</mapper>

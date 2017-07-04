@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+	<select id="userlist" resultType="it.net.sky.login.vo.LoginVo">
+		select * from MEMBERJOIN,DEPARTMENTCODE
+		where member_enum !='admin'
+		and MEMBERJOIN.MEMBER_DEPARTMENT=DEPARTMENTCODE.DEP_ID
+	</select>
+	<select id="checkId" parameterType="it.net.sky.login.vo.LoginVo"
+		resultType="it.net.sky.login.vo.LoginVo">
+		select * from MEMBERJOIN,DEPARTMENTCODE
+		where member_enum =#{member_enum}
+		and MEMBER_PASS=#{member_pass}
+		and MEMBERJOIN.MEMBER_DEPARTMENT=DEPARTMENTCODE.DEP_ID
+	</select>
+	
+	<select id="checkPW" parameterType="it.net.sky.login.vo.LoginVo"
+		resultType="it.net.sky.login.vo.LoginVo">
+		select member_enum,member_pass from MEMBERJOIN
+		where member_enum =#{member_enum}
+		and member_pass = #{member_pass}
+	</select>
+	
+	<select id="profileImg" resultType="java.lang.String">
+		select MEMBER_PROFILE from MEMBERJOIN where MEMBER_ENUM = #{id}
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="report">
+	<select id="select" parameterType="it.net.sky.login.vo.LoginVo"
+		resultType="it.net.sky.report.vo.ReportVo">
+		select report_no,reg_title,reg_register,reg_state,reg_reason,label_name, label_color from report,label where label_num = nvl(reg_labelnum,0) and reg_id=#{member_enum,jdbcType=VARCHAR}
+				
+	</select>
+	
+	<select id="select2" parameterType="int"
+		resultType="it.net.sky.report.vo.ReportVo">
+		select report_no,reg_title,reg_register,reg_state,reg_reason,label_name, label_color from report,label where label_num = nvl(reg_labelnum,0)
+		and label_num =#{label_num}
+				
+	</select>
+	
+	
+	
+	<select id="selectOne" parameterType="int"
+		resultType="it.net.sky.report.vo.ReportVo">
+		select * from report where report_no=#{member_enum,jdbcType=VARCHAR}
+	</select>
+	<select id="check" parameterType="it.net.sky.login.vo.LoginVo"
+		resultType="it.net.sky.report.vo.ReportVo">
+		select report_no,reg_title,reg_register,reg_state,reg_reason from report
+where report_no in 
+(select report_no from report
+		where report_no in(
+		select report_no from report
+		where REG_MANAGER1 =#{member_enum,jdbcType=VARCHAR}
+    	and REG_UPDATE1 is null
+		)
+		or report_no in(
+		select report_no from report
+		where REG_MANAGER2 =#{member_enum,jdbcType=VARCHAR}
+		and REG_UPDATE1 is not null
+    and REG_UPDATE2 is null
+		)
+		or report_no in(
+		select report_no from report
+		where REG_MANAGER3 =#{member_enum,jdbcType=VARCHAR}
+		and REG_UPDATE2 is not null
+    and REG_UPDATE2 is null
+		)
+		or report_no in(
+		select report_no from report
+		where REG_MANAGER4 =#{member_enum,jdbcType=VARCHAR}
+		and REG_UPDATE3 is not null
+    and REG_UPDATE4 is null
+		)or report_no in(
+		select report_no from report
+		where REG_MANAGER5 =#{member_enum,jdbcType=VARCHAR}
+		and REG_UPDATE4 is not null
+    and REG_UPDATE5 is null
+		)
+  )
+  and reg_state !=0
+  and reg_state !=3
+	</select>
+
+	<insert id="insert" parameterType="it.net.sky.report.vo.ReportVo">
+		insert into
+		REPORT(
+		report_no,
+		reg_id,
+		reg_dep,
+		reg_manager1,
+		reg_manager2,
+		reg_manager3,
+		reg_manager4,
+		reg_manager5,
+		reg_title,
+		reg_state,
+		reg_register,
+		reg_type,
+		reg_cont,
+		reg_labelnum,
+		coment
+		)values
+		(
+		PK_REP_REORT_NO.nextval,
+		#{reg_id,jdbcType=VARCHAR},
+		#{reg_dep,jdbcType=VARCHAR},
+		#{reg_manager1,jdbcType=VARCHAR},
+		#{reg_manager2,jdbcType=VARCHAR},
+		#{reg_manager3,jdbcType=VARCHAR},
+		#{reg_manager4,jdbcType=VARCHAR},
+		#{reg_manager5,jdbcType=VARCHAR},
+		#{reg_title,jdbcType=VARCHAR},
+		#{reg_state,jdbcType=VARCHAR},
+		sysdate,
+		#{reg_type,jdbcType=VARCHAR},
+		#{reg_cont,jdbcType=VARCHAR},
+		#{reg_labelnum,jdbcType=INTEGER},
+		#{comment,jdbcType=VARCHAR}
+		)
+	</insert>
+	<update id="updateReport" parameterType="it.net.sky.report.vo.ReportVo">
+		update report
+		<choose>
+		<when test="reg_update1 == null">
+		set REG_UPDATE1 =sysdate
+		<choose>
+		<when test="reg_manager2 != null">
+		,reg_state=2
+		</when>
+		<when test="reg_manager2 == null">
+		,reg_state=3
+		</when>
+		</choose>
+		</when>
+		<when test="reg_update2 == null">
+		set REG_UPDATE2 =sysdate
+		<choose>
+		<when test="reg_manager3 != null">
+		,reg_state=2
+		</when>
+		<when test="reg_manager3 == null">
+		,reg_state=3
+		</when>
+		</choose>
+		</when>
+		<when test="reg_update3 == null">
+		set REG_UPDATE3 =sysdate
+		<choose>
+		<when test="reg_manager4 != null">
+		,reg_state=2
+		</when>
+		<when test="reg_manager4 == null">
+		,reg_state=3
+		</when>
+		</choose>
+		</when>
+		<when test="reg_update4 == null">
+		set REG_UPDATE4 =sysdate
+		<choose>
+		<when test="reg_manager5 != null">
+		,reg_state=2
+		</when>
+		<when test="reg_manager5 == null">
+		,reg_state=3
+		</when>
+		</choose>
+		</when>
+		<when test="reg_update5 == null">
+		set REG_UPDATE5 =sysdate
+		,reg_state=3
+		</when>
+		</choose>
+		where report_no=#{report_no,jdbcType=VARCHAR}
+	</update>
+		<update id="backReport" parameterType="it.net.sky.report.vo.ReportVo">
+	update report set
+		reg_reason=#{reg_reason,jdbcType=VARCHAR},reg_state=0
+		where report_no=#{report_no,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="surch" parameterType="hashmap" resultType="it.net.sky.report.vo.ReportVo">
+			select * from
+			(select * from
+			(select reg_register
+						  ,reg_id
+						  ,reg_title
+						  ,report_no
+						  ,reg_state 
+			from report
+			where REG_ID != #{sessionid,jdbcType=VARCHAR}) 
+			where
+			     report_no like '%'||#{keyword,jdbcType=VARCHAR}||'%'
+					or REG_ID like '%'||#{keyword,jdbcType=VARCHAR}||'%'
+					or REG_TITLE like '%'||#{keyword,jdbcType=VARCHAR}||'%')
+			    where reg_state =0 or reg_state =3
+	</select>
+	
+	
+	<update id="updateLabelNumPlus" parameterType="it.net.sky.report.vo.ReportVo">
+	update report set 
+	reg_labelnum = #{reg_labelnum,jdbcType=INTEGER}
+	where report_no = #{report_no,jdbcType=INTEGER}
+	
+		
+	</update>
+	
+	<update id="updateLabelNumMinus" parameterType="it.net.sky.report.vo.ReportVo">
+	update report set 
+	reg_labelnum = 0
+	where report_no = #{report_no,jdbcType=INTEGER}
+			
+	</update>
+<select id="waitCont" parameterType="String" resultType="int">
+select count(*) 
+from report 
+where reg_id=#{id,jdbcType=VARCHAR} 
+and report_no 
+in(select report_no 
+from report 
+where REG_STATE = '1'
+or REG_STATE='2')
+</select>
+<select id="endCont" parameterType="String" resultType="int">
+select count(*) 
+from report 
+where reg_id=#{id,jdbcType=VARCHAR} 
+and report_no 
+in(select report_no 
+from report 
+where REG_STATE = '3')
+</select>
+<select id="backCont" parameterType="String" resultType="int">
+select count(*) 
+from report 
+where reg_id=#{id,jdbcType=VARCHAR} 
+and report_no 
+in(select report_no 
+from report 
+where REG_STATE = '0')
+</select>
+	
+
+	
+	
+</mapper>

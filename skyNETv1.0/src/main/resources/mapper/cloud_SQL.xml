@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.cloud">
+    
+    <!-- com.dao.cloud.clountCloud -->
+    <select id="clountCloud" resultType="int" parameterType="String" >
+    SELECT COUNT(*) FROM cloud WHERE cloud_user = #{cloudUser}
+    </select>
+    <select id="selectCloudVal" resultType="int">
+    SELECT PK_CLOUDGORUP_SEQ.nextval FROM dual
+    </select>
+    <select id="insertFileVal" resultType="int">
+    SELECT PK_FILEINFO_NO.nextval FROM DUAL
+    </select>
+    <!-- 
+            추가 : 
+            새 사용자 계정 1개만 생성
+            클라우드,그룹0, 그룹클라우드 생성 
+            파라미터 : 사원번호
+            
+        용량 단위 바이트 : 1
+              킬로바이트 : (      1048576) 1024*1024
+              메가바이트 : (   1073741824) 1024*1024*1024
+         500매가   : (   5368709120) 1024*1024*1024*5
+              기가바이트 : (1099511627776) 1024*1024*1024*1024 : 
+                  
+    
+    -->
+    <insert id="cloudNewUser"  parameterType="map">
+    <selectKey keyProperty="groupNum" resultType="int" order="BEFORE">
+    SELECT PK_MEMBERGROUP_NO.nextval FROM dual
+    </selectKey>
+    INSERT ALL
+    INTO cloud 
+    (
+    cloud_user ,cloud_grade ,cloud_maxsize ,cloud_amount
+    )
+    VALUES ('${cloudUser}',1,5368709120,0)
+    INTO memberGroup
+    (
+    group_no ,group_type ,group_typename ,group_leader
+    ) VALUES (${groupNum} ,0 ,'사원' ,'${cloudUser}')
+    INTO cloudGroup 
+    (
+    group_seq ,group_no ,cloud_user ,group_name ,group_regdate
+    ) VALUES (${cloudNum} ,${groupNum} ,'${cloudUser}' ,'내드라이브' ,SYSDATE)
+    SELECT '사랑' FROM dual
+    </insert>
+    <!-- 사용안함
+         그룹생성 (기본타입)
+         파라미터 : 타입(0,1,2,3) , 그룹이름 ,사원번호  -->
+    <insert id="cloudNewGroup"  parameterType="it.net.sky.cloud.vo.GroupVo">
+    INSERT INTO memberGroup
+    (group_no ,group_type ,group_typename ,group_leader)
+     VALUES (PK_MEMBERGROUP_NO.nextval ,${groupType} ,${groupTypeName} ,${groupLeader})
+    </insert>
+    <!-- 
+          그룹 생성  
+           파라미터 : 그룹정보1개 그리고 사원(클라우드)정보 다수(1개이상) 
+          : 사원번호등등 와 그룹이름(사원이름_사원이름_)
+     -->
+    <insert id="cloudNewCloud" parameterType="it.net.sky.cloud.vo.CloudInsertVo">
+        <selectKey keyProperty="groupNum" resultType="int">
+        SELECT PK_MEMBERGROUP_NO.nextval FROM dual
+        </selectKey>
+        INSERT ALL
+        INTO memberGroup
+        (
+        group_no ,group_type ,group_typename ,group_leader
+        ) VALUES (${groupNum} ,${groupType} ,${groupTypeName} ,${groupLeader})
+        <foreach collection="list" item="element">
+        INTO cloudGroup 
+        (
+        group_seq ,group_no ,cloud_user ,group_name ,group_regdate
+        ) VALUES (
+            SELECT PK_CLOUDGORUP_SEQ.nextval 
+            ,A.*
+            (${groupNum} ,${element.cloupUser} ,${element.groupName} ,SYSDATE
+            FROM dual
+            )A
+        )
+        </foreach>
+    </insert>
+    <!--
+            나의 사원그룹 파일전체
+            파일조회 : 
+            조건 (사원번호)
+            결과 (파일번호 ,파일이름 ,소유자 ,최종수정일 ,파일크기(큰글자))
+        Integer,String,
+     -->
+    <select id="cloudSelectCloud" parameterType="map" resultType="it.net.sky.cloud.vo.CloudFileInfo">
+    SELECT 
+        C.FILE_NO AS fileNo 
+       ,C.FILE_ORINAME AS fileOriName 
+       ,D.MEMBER_NAME AS fileUser 
+       ,to_char(C.FILE_MODDATE,'yyyy-mm-dd hh24:mm:ss') AS fileModDate 
+       ,to_char(C.FILE_REGDATE,'yyyy-mm-dd hh24:mm:ss') AS fileRegDate
+       ,nvl(to_char(C.FILE_LEADDATE,'yyyy-mm-dd hh24:mm:ss'),' ') AS fileLeadDate
+       ,case when round(c.file_size/1024,1) = 0 then to_char(1)||'kb'
+            when (round(c.file_size/1048576,1)) &lt;  1 then to_char( round(c.file_size/1024,1))||'kb'
+            when (round(c.file_size/1048576,1)) &gt;= 1 then to_char( round(c.file_size/1048576,1))||'mb'
+        end AS fileSize2
+       ,case when FILE_TYPE = 0 then '문서'
+             when FILE_TYPE = 1 then '사진'
+             when FILE_TYPE = 2 then '동영상'
+             when FILE_TYPE = 3 then '음악'
+        end AS fileType       
+      FROM  cloudGroup A 
+      INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+      INNER JOIN fileInfo    C ON(A.GROUP_SEQ  = C.GROUP_SEQ)
+      INNER JOIN memberJoin  D ON(C.FILE_USER = D.MEMBER_ENUM)
+      WHERE B.GROUP_TYPE   = 0
+      AND   A.CLOUD_USER   = '${cloudUser}'
+      AND   C.FILE_DEL     = 0
+      ORDER BY C.FILE_REGDATE DESC
+    </select>
+    
+    <!-- 
+        나의 파일 중 타입렬 조회
+     -->
+    <select id="cloudSelectCloudType" parameterType="map" resultType="it.net.sky.cloud.vo.CloudFileInfo">
+   SELECT 
+        C.FILE_NO AS fileNo 
+       ,C.FILE_ORINAME AS fileOriName 
+       ,D.MEMBER_NAME AS fileUser 
+       ,to_char(C.FILE_MODDATE,'yyyy-mm-dd hh24:mm:ss') AS fileModDate 
+       ,to_char(C.FILE_REGDATE,'yyyy-mm-dd hh24:mm:ss') AS fileRegDate
+       ,nvl(to_char(C.FILE_LEADDATE,'yyyy-mm-dd hh24:mm:ss'),' ') AS fileLeadDate
+       ,case when round(c.file_size/1024,1) = 0 then to_char(1)||'kb'
+            when (round(c.file_size/1048576,1)) &lt;  1 then to_char( round(c.file_size/1024,1))||'kb'
+            when (round(c.file_size/1048576,1)) &gt;= 1 then to_char( round(c.file_size/1048576,1))||'mb'
+        end AS fileSize2
+       ,case when FILE_TYPE = 0 then '문서'
+             when FILE_TYPE = 1 then '사진'
+             when FILE_TYPE = 2 then '동영상'
+             when FILE_TYPE = 3 then '음악'
+        end AS fileType       
+      FROM  cloudGroup A 
+      INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+      INNER JOIN fileInfo    C ON(A.GROUP_SEQ  = C.GROUP_SEQ)
+      INNER JOIN memberJoin  D ON(C.FILE_USER = D.MEMBER_ENUM)
+      WHERE B.GROUP_TYPE   = 0
+      AND   A.CLOUD_USER   = '${cloudUser}'
+      AND   C.file_type    = '${fileType}'
+      AND   C.file_del     =  ${fileDel}
+      ORDER BY C.FILE_REGDATE DESC
+      
+    </select>
+    
+    
+
+    <insert id="cludFileInsert" parameterType="it.net.sky.cloud.vo.CloudFileInfo">
+    INSERT ALL
+    INTO fileInfo 
+    (file_no,group_seq,file_group,file_user,file_directory
+    ,file_name,file_oriname,file_size,file_type,file_moddate,file_leaddate
+    ,file_regdate,file_note,file_del)
+    VALUES
+    (${fileNo},${gorupSeq},${fileGroup},'${fileUser}','${fileDirectory}'
+    ,'${fileName}','${fileOriName}',${fileSize} ,'${fileType}',SYSDATE ,NULL 
+    ,SYSDATE ,'' ,0
+    )
+    INTO  fileHistory 
+    (
+    file_no ,file_user ,file_orino,historycode ,file_moduser ,file_moddate,file_oriname
+    )VALUES(
+    ${fileNo},'${fileUser}',${fileNo},0,'${fileUser}',SYSDATE,'${fileOriName}'
+    )
+    SELECT '사랑' FROM dual
+    </insert>
+    <select id="cloudFileInsertMyGroupInfo" parameterType="map" resultType="it.net.sky.cloud.vo.CloudGroupVo">
+    SELECT C.GROUP_SEQ AS groupSeq  ,C.GROUP_NO AS groupNo
+       FROM  cloud A
+      INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+      INNER JOIn cloudGroup  C ON(C.GROUP_NO = B.GROUP_NO)
+      WHERE B.GROUP_TYPE   = 0
+      AND   A.CLOUD_USER   = '${cloudUser}'
+    </select>
+    
+    <insert id="gongyouHistory" parameterType="map">
+    INSERT INTO 
+           fileHistory (file_no ,file_user ,file_orino,historycode ,file_moduser ,file_moddate,file_oriname) 
+                (
+                SELECT file_no, file_user ,file_no AS file_OriNo, 6 AS historycode,${modUser} AS file_moduser ,SYSDATE AS file_moddate,file_oriname
+                FROM   fileInfo
+                WHERE  File_no  = ${fileNo}
+                AND    file_user = ${modUser}
+                )
+    </insert>
+    
+    <!--
+            나의 그룹 전체조회 
+            그룹조회 :
+            조건 (사원번호) 
+            결과 (그룹번호 ,그룹별명 ,그룹타입 ,맴버수 )
+     -->
+
+    
+    <!-- 추가 : 클라우드,그룹0, 그룹클라우드 생성 -->
+    
+    <!-- 추가 : 그룹생성 -->
+    
+    <!-- 추가 : 파일생성 -->
+   <!--  <insert id="cloudFileInsertHistory" parameterType="it.net.sky.cloud.vo.CloudFileHistory"> -->
+   <!--  INSERT INTO fileHistory (file_no ,file_user ,historycode ,file_moduser ,file_moddate,file_oriname)
+    VALUES (#{file_no},#{file_user},0,#{file_user},SYSDATE,#{file_oriname}) -->
+    <!-- </insert>
+     -->
+    <!-- 수정 : 이른변경 -->
+    <!-- <insert id="clid"> -->
+    <!-- INSERT INTO fileHistory (file_no ,file_user ,file_orino,historycode ,file_moduser ,file_moddate)
+    VALUES (#{file_no},(SELECT file_user FROM fileInfo WHERE file_no = #{file_no}),0,#{file_moduser},SYSDATE,#{file_oriname})
+     -->
+   <!--  </insert> -->
+    <!-- 수정 : 경로변경 -->
+    
+    <!-- 수정 : 교체(붙여넣기) -->
+<!--     <update id="cloudUpdateFileInfo">
+    
+    </update> -->
+    
+    <!-- 내 사원그룹의 휴지통 조회 -->
+    <select id="selectMyGabege" parameterType="map" resultType="it.net.sky.cloud.vo.CloudFileInfo">
+     SELECT 
+        C.FILE_NO AS fileNo 
+       ,C.FILE_ORINAME AS fileOriName 
+       ,D.MEMBER_NAME AS fileUser 
+       ,to_char(C.FILE_MODDATE,'yyyy-mm-dd hh24:mm:ss') AS fileModDate 
+       ,to_char(C.FILE_REGDATE,'yyyy-mm-dd hh24:mm:ss') AS fileRegDate
+       ,nvl(to_char(C.FILE_LEADDATE,'yyyy-mm-dd hh24:mm:ss'),' ') AS fileLeadDate
+       ,case when round(c.file_size/1024,1) = 0 then to_char(1)||'kb'
+            when (round(c.file_size/1048576,1)) &lt;  1 then to_char( round(c.file_size/1024,1))||'kb'
+            when (round(c.file_size/1048576,1)) &gt;= 1 then to_char( round(c.file_size/1048576,1))||'mb'
+        end AS fileSize2
+       ,case when FILE_TYPE = 0 then '문서'
+             when FILE_TYPE = 1 then '사진'
+             when FILE_TYPE = 2 then '동영상'
+             when FILE_TYPE = 3 then '음악'
+        end AS fileType       
+      FROM  cloudGroup A 
+      INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+      INNER JOIN fileInfo    C ON(A.GROUP_SEQ  = C.GROUP_SEQ)
+      INNER JOIN memberJoin  D ON(C.FILE_USER = D.MEMBER_ENUM)
+      WHERE B.GROUP_TYPE   = 0
+      AND   A.CLOUD_USER   = '${cloudUser}'
+      AND   C.FILE_DEL     = 1
+      ORDER BY C.FILE_REGDATE DESC
+    </select>
+<!--     이동 : 휴지통이동 -->
+    <update id="cloudMoveGabege" parameterType="map">
+    UPDATE fileInfo set file_del = '1' WHERE file_no = #{fileNo}
+    </update>
+    <!-- 등록 : 파일이력 휴지통이동 -->
+    <insert id="cloudMoveGabegeHistory" parameterType="map">
+    INSERT INTO 
+           fileHistory (file_no ,file_user ,file_orino,historycode ,file_moduser ,file_moddate,file_oriname) 
+                (
+                SELECT file_no, file_user ,file_no AS file_OriNo, 4 AS historycode,${modUser} AS file_moduser ,SYSDATE AS file_moddate,file_oriname
+                FROM   fileInfo
+                WHERE  File_no  = ${fileNo}
+                )
+    </insert>
+    
+    <!-- 이동 : 복원 -->
+    <update id="cloudRecorvertGabege" parameterType="map">
+    UPDATE fileInfo set file_del = '0' WHERE file_no = #{fileNo}
+    </update>
+    <!-- 등록 : 파일이력 복원 -->
+    <insert id="cloudRecorvertGabegeHistory" parameterType="map">
+    INSERT INTO 
+           fileHistory (file_no ,file_user ,file_orino,historycode ,file_moduser ,file_moddate,file_oriname) 
+                (
+                SELECT file_no, file_user ,file_no AS file_OriNo, 5 AS historycode,${modUser} AS file_moduser ,SYSDATE AS file_moddate,file_oriname
+                FROM   fileInfo
+                WHERE  File_no  = ${fileNo}
+                )
+    </insert>
+   <!-- 파일이력조회 -->
+    <select id="cloudSelectFileHistory" parameterType="map" resultType="it.net.sky.cloud.vo.CloudFileHistory">
+    SELECT  file_no AS fileNo
+           ,file_user AS fileUser
+           ,file_orino AS fileOriNo
+           ,historycode AS code
+           ,case when historycode = 0 then '파일생성.'
+                 when historycode = 1 then '이름변경.'
+                 when historycode = 2 then '이동'
+                 when historycode = 3 then '수정'
+                 when historycode = 4 then '삭제'
+                 when historycode = 5 then '복원'
+                 when historycode = 6 then '공유'
+            end  AS code2
+           ,file_moduser AS fileModeUser
+           ,to_char(file_moddate,'yyyy-mm-dd hh24:mm:ss') AS fileModeDate
+           ,file_oriname AS fileOriname
+    FROM   fileHistory
+    WHERE  file_no = ${fileNo}
+    ORDER BY FILE_MODDATE DESC 
+    </select>
+   
+    <!-- 파일완전삭제 -->
+    <delete id="cloudFilHistoryeDelete" parameterType="map">
+    DELETE FROM fileHistory WHERE file_no = #{fileNo}
+    </delete>
+    <!-- 파일완전삭제 -->
+    <delete id="cloudFileInfoDelete" parameterType="map">
+    DELETE FROM fileInfo    WHERE file_no = #{fileNo}
+    </delete>
+    
+    <!-- 클라우드통계 
+            용량 단위 바이트 : 1
+              킬로바이트 : (      1048576) 1024*1024
+              메가바이트 : (   1073741824) 1024*1024*1024
+         500매가   : (   5368709120) 1024*1024*1024*5
+              기가바이트 : (1099511627776) 1024*1024*1024*1024 : 
+    -->
+    <select id="myCloudCount" parameterType="it.net.sky.cloud.vo.CloudCount" resultType="it.net.sky.cloud.vo.CloudCount">
+        SELECT COUNT(*) AS state
+            ,SUM(CLOUD_AMOUNT) AS user1
+            ,SUM(
+                case when cloud_maxsize= 5368709120  then 500
+                     when cloud_maxsize= 536870912   then 500
+            else 0
+                end 
+            ) AS unuser
+        FROM CLOUD
+        WHERE CLOUD_USER='${cloudUser}'
+    </select>
+    <select id="downloadFileInfo" parameterType="map" resultType="it.net.sky.cloud.vo.CloudFileInfo">
+        SELECT C.FILE_ORINAME AS fileOriName ,c.FILE_NAME AS fileName
+        FROM  cloud A
+        INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+        INNER JOIn cloudGroup  D ON(D.GROUP_NO = B.GROUP_NO)
+        INNER JOIN FILEINFO    C ON(D.GROUP_SEQ =C.GROUP_SEQ)
+        WHERE B.GROUP_TYPE   = 0
+        AND   A.CLOUD_USER   = '${cloudUser}'
+        AND   C.FILE_NO      = '${fileNo}'
+    </select> 
+    <select id="selectMyDriveCount" parameterType="map" resultType="it.net.sky.cloud.vo.MyDriveCount">
+    SELECT 
+       nvl(SUM(CASE WHEN C.FILE_DEL = 0 THEN 1 ELSE 0 END),0) AS myDriverCount
+      ,nvl(SUM(CASE WHEN C.FILE_DEL = 1 THEN 1 ELSE 0 END),0) AS myGabegeCount
+      FROM  cloudGroup A 
+      INNER JOIN memberGroup B ON(A.CLOUD_USER = B.GROUP_LEADER)
+      INNER JOIN fileInfo    C ON(A.GROUP_SEQ  = C.GROUP_SEQ)
+      INNER JOIN memberJoin  D ON(C.FILE_USER = D.MEMBER_ENUM)
+      WHERE B.GROUP_TYPE   = 0
+      AND   A.CLOUD_USER   = '${cloudUser}'
+    </select>
+</mapper>
