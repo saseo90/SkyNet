@@ -35,8 +35,8 @@
             </beans:bean>
         </message-converters>
     </annotation-driven>
-   <beans:bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
-   <beans:bean id="jackson2MessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+   <!-- <beans:bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
+    --><beans:bean id="jackson2MessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
 
     <!-- 인터셉터 부분 -->
 
@@ -120,6 +120,4 @@
    <beans:bean id="excelView" class="it.net.sky.inout.controller.ExcelView"/>
    <beans:bean id="pdfView" class="it.net.sky.inout.controller.PDFView"/>
 
-
-	
 </beans:beans>
